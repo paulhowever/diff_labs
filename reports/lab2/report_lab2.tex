@@ -1,0 +1,177 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{indentfirst}
+
+\geometry{
+    left=25mm,
+    right=15mm,
+    top=20mm,
+    bottom=20mm
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=black,
+    citecolor=black
+}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    keywordstyle=\bfseries,
+    commentstyle=\itshape,
+    showstringspaces=false,
+    tabsize=4
+}
+
+\title{Лабораторная работа №2\\Численное решение задачи Коши для уравнения высшего порядка}
+\author{Студент: \underline{\hspace{5cm}}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Цель работы}
+Реализовать векторный метод Рунге--Кутты 4-го порядка для задачи Коши второго порядка, получить численное решение, сравнить его с аналитическим и оценить точность.
+
+\section{Постановка задачи}
+Для варианта 6 задано уравнение:
+\[
+3yy'' - 3(y')^2 = 4y(y')^5,\qquad y(0)=1,\qquad y'(0)=-1.
+\]
+Интегрирование проводится на отрезке $[x_0,b]$, где
+\[
+x_0=0,\quad b=0.7,\quad n=200,\quad h=\frac{b-x_0}{n}=0.0035.
+\]
+
+\section{Теоретическая часть}
+\subsection{Задача Коши второго порядка}
+Исходная задача задаётся в форме $F(x,y,y',y'')=0$ с начальными условиями для $y$ и $y'$.
+
+\subsection{Переход к системе первого порядка}
+Вводим
+\[
+u_1 = y,\qquad u_2 = y'.
+\]
+Тогда
+\[
+u_1' = u_2,\qquad u_2' = y''.
+\]
+Из исходного уравнения:
+\[
+3yy'' = 3(y')^2 + 4y(y')^5 \Rightarrow
+y'' = \frac{(y')^2}{y} + \frac{4}{3}(y')^5.
+\]
+Следовательно,
+\[
+u_2' = \frac{u_2^2}{u_1} + \frac{4}{3}u_2^5.
+\]
+
+\subsection{Векторный RK4}
+Для вектора $U_k=(u_{1,k},u_{2,k})^T$:
+\[
+U_{k+1}=U_k+\frac{h}{6}\left(K_1+2K_2+2K_3+K_4\right),
+\]
+где
+\[
+K_1=G(x_k,U_k),\quad
+K_2=G\left(x_k+\frac{h}{2},U_k+\frac{h}{2}K_1\right),
+\]
+\[
+K_3=G\left(x_k+\frac{h}{2},U_k+\frac{h}{2}K_2\right),\quad
+K_4=G(x_k+h,U_k+hK_3).
+\]
+В реализации векторная схема применяется ко всей системе $(u_1,u_2)$ одновременно.
+
+\subsection{Формулы погрешностей}
+\[
+\Delta = \max_{k=1,\ldots,n}\left|\varphi(x_k)-\tilde\varphi(x_k)\right|,
+\]
+\[
+\delta = \max_{k=1,\ldots,n}\frac{\left|\varphi(x_k)-\tilde\varphi(x_k)\right|}{\left|\tilde\varphi(x_k)\right|}.
+\]
+
+\section{Аналитическое решение}
+В коде используется функция
+\[
+\varphi(x)=\left(1-\frac{4x}{3}\right)^{3/4}.
+\]
+Проверка начальных условий:
+\[
+\varphi(0)=1,\qquad
+\varphi'(x)=-\left(1-\frac{4x}{3}\right)^{-1/4}\Rightarrow \varphi'(0)=-1.
+\]
+Подстановка в выражение для $y''=\frac{(y')^2}{y}+\frac{4}{3}(y')^5$ также выполняется тождественно, поэтому функция согласована с исходной задачей и реализацией.
+
+\section{Реализация}
+Код разделён на описание задачи, векторный шаг RK4, solver, экспорт в CSV и тесты.
+
+\subsection*{Ключевые листинги}
+\lstinputlisting[language={[Sharp]C},caption={Преобразование уравнения и точное решение}]{../../lab2/src/Lab2.Core/Class1.cs}
+\lstinputlisting[language={[Sharp]C},caption={Запуск расчёта и экспорт данных}]{../../lab2/src/Lab2.App/Program.cs}
+\lstinputlisting[language=Python,caption={Генерация графиков и таблиц}]{build_assets.py}
+
+\section{Результаты вычислений}
+\subsection*{Таблица параметров}
+\begin{tabular}{lc}
+\toprule
+Параметр & Значение \\
+\midrule
+$x_0$ & 0 \\
+$b$ & 0.7 \\
+$n$ & 200 \\
+$h$ & 0.0035 \\
+\bottomrule
+\end{tabular}
+
+\subsection*{Таблица погрешностей}
+\begin{table}[H]
+\centering
+\input{tables/errors.tex}
+\caption{Максимальные ошибки метода RK4}
+\end{table}
+
+\subsection*{Выборочные значения}
+\begin{table}[H]
+\centering
+\input{tables/sample_points.tex}
+\caption{Сравнение точного и численного решений}
+\end{table}
+
+\section{Графики}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{images/solutions.png}
+\caption{Точное решение и численное решение RK4}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{images/errors.png}
+\caption{Абсолютная ошибка RK4}
+\end{figure}
+
+\section{Анализ результатов}
+Метод RK4 показывает высокую точность на выбранном шаге: максимальные ошибки малы и изменяются плавно по сетке. Это ожидаемо, поскольку метод имеет высокую локальную точность и учитывает несколько промежуточных оценок в каждом шаге. В отличие от ЛР1, где одно уравнение первого порядка, здесь интегрируется связанная система из двух уравнений, и корректность векторной схемы является принципиальной.
+
+\section{Вывод}
+Для варианта 6 выполнено численное решение задачи Коши второго порядка методом Рунге--Кутты 4-го порядка через приведение к системе первого порядка. Результаты подтверждают согласование численного и аналитического решений, а также хорошую точность метода при выбранном шаге.
+
+\end{document}
