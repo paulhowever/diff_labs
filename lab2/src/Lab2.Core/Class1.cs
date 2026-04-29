@@ -78,6 +78,16 @@ public sealed class SecondOrderSolver
 
     public SolverResult Solve(SecondOrderProblem problem)
     {
+        if (problem.N <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(problem.N), "N must be greater than zero.");
+        }
+
+        if (problem.B <= problem.X0)
+        {
+            throw new ArgumentException("B must be greater than X0.");
+        }
+
         var h = (problem.B - problem.X0) / problem.N;
         var points = new List<SolutionPoint>(problem.N + 1);
         var x = problem.X0;
@@ -91,8 +101,11 @@ public sealed class SecondOrderSolver
             var exact = problem.ExactSolution(x);
             var absError = Math.Abs(exact - y);
             var relError = Math.Abs(y) < 1e-12 ? 0.0 : absError / Math.Abs(y);
-            maxAbs = Math.Max(maxAbs, absError);
-            maxRel = Math.Max(maxRel, relError);
+            if (k > 0)
+            {
+                maxAbs = Math.Max(maxAbs, absError);
+                maxRel = Math.Max(maxRel, relError);
+            }
             points.Add(new SolutionPoint(x, y, exact));
 
             if (k < problem.N)
@@ -109,8 +122,13 @@ public sealed class SecondOrderSolver
 public static class Lab2Variant6
 {
     public static SecondOrderProblem Create(double b, int n) =>
-        new(
-            SecondDerivative: (_, y, yPrime) => (yPrime * yPrime) / y + (4.0 / 3.0) * Math.Pow(yPrime, 5),
+        b >= 0.75
+            ? throw new ArgumentException("For this variant exact solution is defined for x < 0.75.")
+            : new(
+            SecondDerivative: (_, y, yPrime) =>
+                Math.Abs(y) < 1e-12
+                    ? throw new InvalidOperationException("y is too close to zero.")
+                    : (yPrime * yPrime) / y + (4.0 / 3.0) * Math.Pow(yPrime, 5),
             ExactSolution: x => Math.Pow(1.0 - 4.0 * x / 3.0, 0.75),
             X0: 0.0,
             Y0: 1.0,
