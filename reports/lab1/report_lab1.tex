@@ -1,5 +1,4 @@
 \documentclass[12pt,a4paper]{article}
-
 \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
@@ -14,13 +13,15 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{indentfirst}
+\usepackage{setspace}
 
 \geometry{
-    left=25mm,
+    left=30mm,
     right=15mm,
     top=20mm,
     bottom=20mm
 }
+\onehalfspacing
 
 \hypersetup{
     colorlinks=true,
@@ -29,7 +30,7 @@
     citecolor=black
 }
 
-\lstset{
+\lstdefinestyle{codestyle}{
     basicstyle=\ttfamily\small,
     breaklines=true,
     frame=single,
@@ -38,79 +39,113 @@
     keywordstyle=\bfseries,
     commentstyle=\itshape,
     showstringspaces=false,
-    tabsize=4
+    tabsize=4,
+    captionpos=b
 }
-
-\title{Лабораторная работа №1\\Численное решение задачи Коши для уравнения первого порядка}
-\author{Студент: \underline{\hspace{5cm}}}
-\date{\today}
+\lstset{style=codestyle}
 
 \begin{document}
-\maketitle
+
+\begin{titlepage}
+\begin{center}
+Федеральное государственное автономное образовательное учреждение высшего образования\\
+«Национальный исследовательский университет ИТМО»
+\end{center}
+
+\vspace{1cm}
+\begin{center}
+Факультет технологий искусственного интеллекта
+\end{center}
+
+\vfill
+\begin{center}
+{\Large Лабораторная работа №1}\\[0.4cm]
+{\large Численное решение задачи Коши для уравнения первого порядка}
+\end{center}
+\vfill
+
+\begin{flushright}
+Выполнил:\\
+студент группы J3210\\
+Тищенко Павел\\[0.8cm]
+Проверил:\\
+преподаватель\\
+\underline{\hspace{4cm}}
+\end{flushright}
+
+\vfill
+\begin{center}
+Санкт-Петербург\\
+2026
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
 
 \section{Цель работы}
-Исследовать численное решение задачи Коши для ОДУ первого порядка методами Эйлера, Хойна и Рунге--Кутты 4-го порядка, сравнить результаты с аналитическим решением и оценить погрешности.
+Исследовать численное решение задачи Коши для ОДУ первого порядка методами Эйлера, Хойна и Рунге--Кутты 4-го порядка, сравнить численные решения с аналитическим и оценить абсолютную и относительную погрешности.
 
 \section{Постановка задачи}
-Для варианта 6 решается задача:
+Для варианта 6 требуется решить задачу:
 \[
-y' = \frac{1}{x^2 + x + 1} - \frac{y}{x + 0.5}, \qquad y(0)=1,\qquad x\in[x_0,b].
+y' = f(x,y), \quad y(x_0)=y_0, \quad x\in[x_0,b],
 \]
-Выбраны параметры:
 \[
-x_0 = 0,\quad b = 2,\quad n = 200,\quad h = \frac{b-x_0}{n} = 0.01.
+f(x,y)=\frac{1}{x^2+x+1}-\frac{y}{x+0.5}, \quad y(0)=1.
+\]
+Выбранные параметры интегрирования:
+\[
+x_0=0,\quad b=2,\quad n=200,\quad h=\frac{b-x_0}{n}=0.01.
 \]
 
 \section{Теоретическая часть}
 \subsection{Задача Коши и сетка}
-На отрезке интегрирования вводится равномерная сетка:
+Используется равномерная сетка:
 \[
-x_k = x_0 + kh,\quad k=0,\dots,n,\quad h=\frac{b-x_0}{n}.
+x_k=x_0+kh,\quad k=0,\dots,n,\quad h=\frac{b-x_0}{n}.
 \]
 
 \subsection{Метод Эйлера}
 \[
-y_{k+1} = y_k + h f(x_k, y_k).
+y_{k+1}=y_k+h f(x_k,y_k).
 \]
 
 \subsection{Метод Хойна}
 \[
-\hat y_{k+1} = y_k + h f(x_k, y_k),
+\hat y_{k+1}=y_k+h f(x_k,y_k),
 \]
 \[
-y_{k+1} = y_k + \frac{h}{2}
-\left(
-f(x_k, y_k) + f(x_{k+1}, \hat y_{k+1})
-\right).
+y_{k+1}=y_k+\frac{h}{2}\left(f(x_k,y_k)+f(x_{k+1},\hat y_{k+1})\right).
 \]
 
 \subsection{Метод Рунге--Кутты 4-го порядка}
 \[
-k_1 = f(x_k, y_k),\quad
-k_2 = f\left(x_k + \frac{h}{2}, y_k + \frac{h k_1}{2}\right),
+k_1=f(x_k,y_k),\qquad
+k_2=f\left(x_k+\frac{h}{2},y_k+\frac{h k_1}{2}\right),
 \]
 \[
-k_3 = f\left(x_k + \frac{h}{2}, y_k + \frac{h k_2}{2}\right),\quad
-k_4 = f(x_k + h, y_k + h k_3),
+k_3=f\left(x_k+\frac{h}{2},y_k+\frac{h k_2}{2}\right),\qquad
+k_4=f(x_k+h,y_k+h k_3),
 \]
 \[
-y_{k+1} = y_k + \frac{h}{6}(k_1 + 2k_2 + 2k_3 + k_4).
+y_{k+1}=y_k+\frac{h}{6}(k_1+2k_2+2k_3+k_4).
 \]
 
-\subsection{Оценка ошибок}
+\subsection{Формулы погрешностей}
 \[
-\Delta_l = \max_{k=1,\ldots,n}\left|\varphi(x_k)-\tilde\varphi_l(x_k)\right|,
+\Delta_l=\max_{k=1,\ldots,n}\left|\varphi(x_k)-\widetilde{\varphi}_l(x_k)\right|,
 \]
 \[
-\delta_l = \max_{k=1,\ldots,n}
-\frac{\left|\varphi(x_k)-\tilde\varphi_l(x_k)\right|}
-{\left|\tilde\varphi_l(x_k)\right|}.
+\delta_l=\max_{k=1,\ldots,n}
+\frac{\left|\varphi(x_k)-\widetilde{\varphi}_l(x_k)\right|}
+{\left|\widetilde{\varphi}_l(x_k)\right|}.
 \]
 
 \section{Аналитическое решение}
-Перепишем уравнение в линейном виде:
+Перепишем уравнение:
 \[
-y' + \frac{1}{x+0.5}y = \frac{1}{x^2+x+1}.
+y' + \frac{1}{x+0.5}y=\frac{1}{x^2+x+1}.
 \]
 Интегрирующий множитель:
 \[
@@ -118,35 +153,48 @@ y' + \frac{1}{x+0.5}y = \frac{1}{x^2+x+1}.
 \]
 Тогда
 \[
-\frac{d}{dx}\left[(x+0.5)y\right]
-=\frac{x+0.5}{x^2+x+1}
+\frac{d}{dx}\left((x+0.5)y\right)=\frac{x+0.5}{x^2+x+1}
 =\frac{1}{2}\frac{2x+1}{x^2+x+1}.
 \]
-Интегрируя, получаем
+После интегрирования:
 \[
-(x+0.5)y = \frac{1}{2}\ln(x^2+x+1)+C.
+(x+0.5)y=\frac{1}{2}\ln(x^2+x+1)+C.
 \]
-Из условия $y(0)=1$:
-\[
-0.5 = \frac{1}{2}\ln 1 + C \Rightarrow C=0.5.
-\]
-Итог:
+Из $y(0)=1$ получаем $C=0.5$, поэтому
 \[
 \varphi(x)=\frac{0.5\ln(x^2+x+1)+0.5}{x+0.5}.
 \]
-Эта же функция используется в коде как \texttt{ExactSolution}.
 
-\section{Реализация}
-Проект разделён на ядро методов, консольный запуск и тесты.
+\section{Программная реализация}
+Программная часть выполнена на C\# (численные методы, расчёт ошибок) и Python (построение графиков и формирование таблиц для отчёта). Полный исходный код доступен в репозитории:
 
-\subsection*{Ключевые фрагменты кода}
-\lstinputlisting[language={[Sharp]C},caption={Правая часть $f(x,y)$ и точное решение}]{../../lab1/src/Lab1.Core/Variants/Lab1Variant6.cs}
-\lstinputlisting[language={[Sharp]C},caption={Численные методы и solver}]{../../lab1/src/Lab1.Core/Solvers/FirstOrderSolver.cs}
-\lstinputlisting[language={[Sharp]C},caption={Запуск методов и экспорт CSV}]{../../lab1/src/Lab1.App/Program.cs}
-\lstinputlisting[language=Python,caption={Генерация графиков и таблиц}]{build_assets.py}
+\begin{center}
+\url{https://github.com/paulhowever/diff_labs}
+\end{center}
+
+Основные файлы ЛР1:
+\begin{itemize}
+\item \texttt{lab1/src/Lab1.Core/Variants/Lab1Variant6.cs} --- постановка варианта и аналитическое решение;
+\item \texttt{lab1/src/Lab1.Core/Methods/*.cs} --- Эйлер, Хойн, RK4;
+\item \texttt{lab1/src/Lab1.Core/Solvers/FirstOrderSolver.cs} --- общий проход по сетке и расчёт ошибок;
+\item \texttt{reports/lab1/build\_assets.py} --- графики и таблицы для отчёта.
+\end{itemize}
+
+Ключевая общая схема одношагового метода:
+\begin{lstlisting}[language=Python, caption={Общая схема одношагового численного метода}]
+xs = build_uniform_grid(x0, b, n)
+ys[0] = y0
+
+for k in range(n):
+    ys[k + 1] = next_value(xs[k], ys[k], h, f)
+\end{lstlisting}
+
+Функция \texttt{next\_value} задаётся формулами Эйлера, Хойна или RK4 из раздела теории.
 
 \section{Результаты вычислений}
-\subsection*{Параметры расчёта}
+\subsection{Параметры расчёта}
+\begin{table}[H]
+\centering
 \begin{tabular}{lc}
 \toprule
 Параметр & Значение \\
@@ -157,43 +205,51 @@ $n$ & 200 \\
 $h$ & 0.01 \\
 \bottomrule
 \end{tabular}
+\caption{Параметры численного эксперимента для ЛР1}
+\label{tab:lab1_params}
+\end{table}
 
-\subsection*{Таблица погрешностей}
-\noindent Максимумы вычисляются по индексам $k=1,\dots,n$ в соответствии с ТЗ.
+\subsection{Таблица погрешностей}
 \begin{table}[H]
 \centering
 \input{tables/errors.tex}
-\caption{Максимальные абсолютная и относительная ошибки}
+\caption{Максимальные ошибки по методам}
+\label{tab:lab1_errors}
 \end{table}
 
-\subsection*{Выборочные точки}
+\subsection{Сравнение значений в отдельных точках}
 \begin{table}[H]
 \centering
 \input{tables/sample_points.tex}
 \caption{Сравнение точного и численных решений в узлах сетки}
+\label{tab:lab1_points}
 \end{table}
 
-\section{Графики}
+\section{Графики решений}
+На рисунке~\ref{fig:lab1_solutions} показаны аналитическое и численные решения. На рисунке~\ref{fig:lab1_errors} приведены абсолютные ошибки в логарифмической шкале.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{images/solutions.png}
-\caption{Точное решение и решения методами Эйлера, Хойна и RK4}
+\caption{Точное и численные решения для ЛР1}
+\label{fig:lab1_solutions}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{images/errors.png}
-\caption{Абсолютная ошибка методов (логарифмическая шкала)}
+\caption{Абсолютные ошибки методов для ЛР1}
+\label{fig:lab1_errors}
 \end{figure}
 
 \section{Анализ результатов}
-Метод Эйлера показывает наибольшую погрешность, так как имеет первый порядок аппроксимации. Метод Хойна использует коррекцию по наклону на правом конце шага и даёт существенно более точный результат (второй порядок). RK4 учитывает четыре промежуточные оценки производной и обеспечивает погрешность порядка $O(h^4)$ по шагу, что подтверждается численными значениями. Уменьшение шага $h$ приводит к снижению ошибок для всех методов, однако скорость убывания различна и соответствует теории.
-
-\section{Вывод}
-Выполнено численное решение задачи Коши для варианта 6 тремя методами. Полученные результаты согласуются с аналитическим решением. По точности наблюдается ожидаемое соотношение:
+По таблице~\ref{tab:lab1_errors} и рисунку~\ref{fig:lab1_errors} видно ожидаемое распределение точности:
 \[
 \text{RK4} \succ \text{Хойн} \succ \text{Эйлер}.
 \]
-Цель лабораторной работы достигнута.
+Метод Эйлера имеет наибольшую ошибку из-за первого порядка точности. Метод Хойна значительно точнее за счёт предиктор-корректорной схемы. Метод RK4 демонстрирует минимальную ошибку на выбранной сетке и наилучшее совпадение с аналитическим решением на рисунке~\ref{fig:lab1_solutions}.
+
+\section{Вывод}
+Задача Коши варианта 6 для уравнения первого порядка решена тремя численными методами при постоянном шаге. Получено аналитическое решение, построены графики и рассчитаны абсолютные и относительные погрешности. Результаты полностью согласуются с теорией о точности методов.
 
 \end{document}

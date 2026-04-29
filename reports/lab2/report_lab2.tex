@@ -1,5 +1,4 @@
 \documentclass[12pt,a4paper]{article}
-
 \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage[russian]{babel}
@@ -14,13 +13,15 @@
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{indentfirst}
+\usepackage{setspace}
 
 \geometry{
-    left=25mm,
+    left=30mm,
     right=15mm,
     top=20mm,
     bottom=20mm
 }
+\onehalfspacing
 
 \hypersetup{
     colorlinks=true,
@@ -29,7 +30,7 @@
     citecolor=black
 }
 
-\lstset{
+\lstdefinestyle{codestyle}{
     basicstyle=\ttfamily\small,
     breaklines=true,
     frame=single,
@@ -38,79 +39,123 @@
     keywordstyle=\bfseries,
     commentstyle=\itshape,
     showstringspaces=false,
-    tabsize=4
+    tabsize=4,
+    captionpos=b
 }
-
-\title{Лабораторная работа №2\\Численное решение задачи Коши для уравнения высшего порядка}
-\author{Студент: \underline{\hspace{5cm}}}
-\date{\today}
+\lstset{style=codestyle}
 
 \begin{document}
-\maketitle
+
+\begin{titlepage}
+\begin{center}
+Федеральное государственное автономное образовательное учреждение высшего образования\\
+«Национальный исследовательский университет ИТМО»
+\end{center}
+
+\vspace{1cm}
+\begin{center}
+Факультет технологий искусственного интеллекта
+\end{center}
+
+\vfill
+\begin{center}
+{\Large Лабораторная работа №2}\\[0.4cm]
+{\large Численное решение задачи Коши для уравнения высшего порядка}
+\end{center}
+\vfill
+
+\begin{flushright}
+Выполнил:\\
+студент группы J3210\\
+Тищенко Павел\\[0.8cm]
+Проверил:\\
+преподаватель\\
+\underline{\hspace{4cm}}
+\end{flushright}
+
+\vfill
+\begin{center}
+Санкт-Петербург\\
+2026
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\newpage
 
 \section{Цель работы}
-Реализовать векторный метод Рунге--Кутты 4-го порядка для задачи Коши второго порядка, получить численное решение, сравнить его с аналитическим и оценить точность.
+Реализовать численное решение задачи Коши для уравнения второго порядка методом Рунге--Кутты 4-го порядка после приведения к системе первого порядка, сравнить результат с аналитическим решением и оценить ошибки.
 
 \section{Постановка задачи}
-Для варианта 6 задано уравнение:
+Для варианта 6 требуется решить:
 \[
-3yy'' - 3(y')^2 = 4y(y')^5,\qquad y(0)=1,\qquad y'(0)=-1.
-\]
-Интегрирование проводится на отрезке $[x_0,b]$, где
-\[
-x_0=0,\quad b=0.7,\quad n=200,\quad h=\frac{b-x_0}{n}=0.0035.
-\]
-Значение $b$ выбрано так, чтобы сохранялась область определения аналитического решения ($x<0.75$).
-
-\section{Теоретическая часть}
-\subsection{Задача Коши второго порядка}
-Исходная задача задаётся в форме $F(x,y,y',y'')=0$ с начальными условиями для $y$ и $y'$.
-
-\subsection{Переход к системе первого порядка}
-Вводим
-\[
-u_1 = y,\qquad u_2 = y'.
-\]
-Тогда
-\[
-u_1' = u_2,\qquad u_2' = y''.
-\]
-Из исходного уравнения:
-\[
-3yy'' = 3(y')^2 + 4y(y')^5 \Rightarrow
-y'' = \frac{(y')^2}{y} + \frac{4}{3}(y')^5.
-\]
-Следовательно,
-\[
-u_2' = \frac{u_2^2}{u_1} + \frac{4}{3}u_2^5.
-\]
-
-\subsection{Векторный RK4}
-Для вектора $U_k=(u_{1,k},u_{2,k})^T$:
-\[
-U_{k+1}=U_k+\frac{h}{6}\left(K_1+2K_2+2K_3+K_4\right),
+F(x,y,y',y'')=0,\quad y(x_0)=y_0,\quad y'(x_0)=y_0',\quad x\in[x_0,b],
 \]
 где
 \[
-K_1=G(x_k,U_k),\quad
-K_2=G\left(x_k+\frac{h}{2},U_k+\frac{h}{2}K_1\right),
+3yy''-3(y')^2=4y(y')^5,\quad y(0)=1,\quad y'(0)=-1.
+\]
+Выбранные параметры:
+\[
+x_0=0,\quad b=0.7,\quad n=200,\quad h=\frac{b-x_0}{n}=0.0035.
+\]
+
+\section{Теоретическая часть}
+\subsection{Задача Коши для уравнения высшего порядка}
+Уравнение второго порядка переводится к системе первого порядка, после чего интегрируется векторным одношаговым методом.
+
+\subsection{Переход к системе первого порядка}
+\[
+u_1=y,\qquad u_2=y',
 \]
 \[
-K_3=G\left(x_k+\frac{h}{2},U_k+\frac{h}{2}K_2\right),\quad
+u_1'=u_2,\qquad u_2'=y''.
+\]
+
+\subsection{Векторный RK4}
+Для вектора состояния $U_k=(u_{1,k},u_{2,k})^T$:
+\[
+U_{k+1}=U_k+\frac{h}{6}(K_1+2K_2+2K_3+K_4),
+\]
+\[
+K_1=G(x_k,U_k),
+\]
+\[
+K_2=G\left(x_k+\frac{h}{2},U_k+\frac{hK_1}{2}\right),
+\]
+\[
+K_3=G\left(x_k+\frac{h}{2},U_k+\frac{hK_2}{2}\right),
+\]
+\[
 K_4=G(x_k+h,U_k+hK_3).
 \]
-В реализации векторная схема применяется ко всей системе $(u_1,u_2)$ одновременно.
 
 \subsection{Формулы погрешностей}
 \[
-\Delta = \max_{k=1,\ldots,n}\left|\varphi(x_k)-\tilde\varphi(x_k)\right|,
+\Delta=\max_{k=1,\ldots,n}\left|\varphi(x_k)-\widetilde{\varphi}(x_k)\right|,
 \]
 \[
-\delta = \max_{k=1,\ldots,n}\frac{\left|\varphi(x_k)-\tilde\varphi(x_k)\right|}{\left|\tilde\varphi(x_k)\right|}.
+\delta=\max_{k=1,\ldots,n}
+\frac{\left|\varphi(x_k)-\widetilde{\varphi}(x_k)\right|}
+{\left|\widetilde{\varphi}(x_k)\right|}.
+\]
+
+\section{Преобразование уравнения к системе первого порядка}
+Из исходного уравнения:
+\[
+3yy''=3(y')^2+4y(y')^5,
+\]
+\[
+y''=\frac{(y')^2}{y}+\frac{4}{3}(y')^5.
+\]
+Следовательно, система имеет вид:
+\[
+u_1'=u_2,\qquad
+u_2'=\frac{u_2^2}{u_1}+\frac{4}{3}u_2^5.
 \]
 
 \section{Аналитическое решение}
-В коде используется функция
+Используется аналитическое решение:
 \[
 \varphi(x)=\left(1-\frac{4x}{3}\right)^{3/4}.
 \]
@@ -119,19 +164,40 @@ K_4=G(x_k+h,U_k+hK_3).
 \varphi(0)=1,\qquad
 \varphi'(x)=-\left(1-\frac{4x}{3}\right)^{-1/4}\Rightarrow \varphi'(0)=-1.
 \]
-Подстановка в выражение для $y''=\frac{(y')^2}{y}+\frac{4}{3}(y')^5$ также выполняется тождественно, поэтому функция согласована с исходной задачей и реализацией.
+Так как для действительных значений требуется $1-\frac{4x}{3}>0$, выбираем $b=0.7<0.75$.
 
-\section{Реализация}
-Код разделён на описание задачи, векторный шаг RK4, solver, экспорт в CSV и тесты.
+\section{Программная реализация}
+Программная реализация выполнена на C\# (численное решение и ошибки) и Python (графики и таблицы отчёта). Полный исходный код:
 
-\subsection*{Ключевые листинги}
-\lstinputlisting[language={[Sharp]C},caption={Преобразование уравнения и точное решение}]{../../lab2/src/Lab2.Core/Variants/Lab2Variant6.cs}
-\lstinputlisting[language={[Sharp]C},caption={Векторный RK4 и solver}]{../../lab2/src/Lab2.Core/Methods/RungeKutta4SecondOrderMethod.cs}
-\lstinputlisting[language={[Sharp]C},caption={Запуск расчёта и экспорт данных}]{../../lab2/src/Lab2.App/Program.cs}
-\lstinputlisting[language=Python,caption={Генерация графиков и таблиц}]{build_assets.py}
+\begin{center}
+\url{https://github.com/paulhowever/diff_labs}
+\end{center}
+
+Основные файлы ЛР2:
+\begin{itemize}
+\item \texttt{lab2/src/Lab2.Core/Variants/Lab2Variant6.cs} --- задание варианта и аналитической функции;
+\item \texttt{lab2/src/Lab2.Core/Methods/RungeKutta4SecondOrderMethod.cs} --- RK4 для системы;
+\item \texttt{lab2/src/Lab2.Core/Solvers/SecondOrderSolver.cs} --- проход по сетке и ошибки;
+\item \texttt{reports/lab2/build\_assets.py} --- графики и таблицы для отчёта.
+\end{itemize}
+
+Ключевая схема RK4 для системы первого порядка:
+\begin{lstlisting}[language=Python, caption={Общая схема RK4 для системы первого порядка}]
+U[0] = [y0, dy0]
+
+for k in range(n):
+    K1 = G(x[k], U[k])
+    K2 = G(x[k] + h / 2, U[k] + h * K1 / 2)
+    K3 = G(x[k] + h / 2, U[k] + h * K2 / 2)
+    K4 = G(x[k] + h, U[k] + h * K3)
+
+    U[k + 1] = U[k] + h / 6 * (K1 + 2*K2 + 2*K3 + K4)
+\end{lstlisting}
 
 \section{Результаты вычислений}
-\subsection*{Таблица параметров}
+\subsection{Параметры расчёта}
+\begin{table}[H]
+\centering
 \begin{tabular}{lc}
 \toprule
 Параметр & Значение \\
@@ -142,39 +208,47 @@ $n$ & 200 \\
 $h$ & 0.0035 \\
 \bottomrule
 \end{tabular}
+\caption{Параметры численного эксперимента для ЛР2}
+\label{tab:lab2_params}
+\end{table}
 
-\subsection*{Таблица погрешностей}
-\noindent Максимумы вычисляются по индексам $k=1,\dots,n$.
+\subsection{Таблица погрешностей}
 \begin{table}[H]
 \centering
 \input{tables/errors.tex}
-\caption{Максимальные ошибки метода RK4}
+\caption{Максимальные абсолютная и относительная ошибки}
+\label{tab:lab2_errors}
 \end{table}
 
-\subsection*{Выборочные значения}
+\subsection{Сравнение значений в отдельных точках}
 \begin{table}[H]
 \centering
 \input{tables/sample_points.tex}
-\caption{Сравнение точного и численного решений}
+\caption{Сравнение аналитического и численного решений}
+\label{tab:lab2_points}
 \end{table}
 
-\section{Графики}
+\section{Графики решений}
+На рисунке~\ref{fig:lab2_solutions} приведено сравнение $\varphi$ и $\widetilde{\varphi}$. На рисунке~\ref{fig:lab2_errors} показано поведение абсолютной ошибки по сетке.
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{images/solutions.png}
-\caption{Точное решение и численное решение RK4}
+\caption{Точное и численное решение для ЛР2}
+\label{fig:lab2_solutions}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.92\textwidth]{images/errors.png}
-\caption{Абсолютная ошибка RK4}
+\caption{Абсолютная ошибка решения ЛР2}
+\label{fig:lab2_errors}
 \end{figure}
 
 \section{Анализ результатов}
-Метод RK4 показывает высокую точность на выбранном шаге: максимальные ошибки малы и изменяются плавно по сетке. Это ожидаемо, поскольку метод имеет высокую локальную точность и учитывает несколько промежуточных оценок в каждом шаге. В отличие от ЛР1, где одно уравнение первого порядка, здесь интегрируется связанная система из двух уравнений, и корректность векторной схемы является принципиальной.
+По таблице~\ref{tab:lab2_errors} видно, что метод RK4 на выбранной сетке обеспечивает малые значения $\Delta$ и $\delta$. График на рисунке~\ref{fig:lab2_solutions} подтверждает высокое совпадение аналитической и численной кривых, а рисунок~\ref{fig:lab2_errors} показывает устойчивое поведение ошибки без выбросов на интервале интегрирования.
 
 \section{Вывод}
-Для варианта 6 выполнено численное решение задачи Коши второго порядка методом Рунге--Кутты 4-го порядка через приведение к системе первого порядка. Результаты подтверждают согласование численного и аналитического решений, а также хорошую точность метода при выбранном шаге.
+Задача Коши для уравнения второго порядка (вариант 6) решена методом Рунге--Кутты 4-го порядка после приведения к системе первого порядка. Получены графики решений и таблицы ошибок. Численные результаты согласуются с аналитическим решением и подтверждают корректность реализации.
 
 \end{document}
